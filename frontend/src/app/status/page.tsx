@@ -69,15 +69,7 @@ const StatusMonitor = () => {
       if (token) {
         try {
           // Updown.io public API endpoint
-          const apiKey = process.env.NEXT_PUBLIC_UPDOWN_API_KEY;
-        
-        const headers: HeadersInit = {};
-        if (apiKey) {
-          headers['X-API-KEY'] = apiKey;          }
-        
-        const response = await fetch(`https://updown.io/api/checks/${token}`, {
-          headers,
-         });
+          const response = await fetch(`/api/updown/${token}`);
           
           if (response.ok) {
             const data = await response.json();
