@@ -69,7 +69,7 @@ export UPDOWN_API_KEY="your-api-key-here"
 export FRONTEND_URL="https://your-frontend.akash.network"
 
 # Run setup
-./setup-updown.sh
+./setup-down.sh
 ```
 
 This will create two checks:

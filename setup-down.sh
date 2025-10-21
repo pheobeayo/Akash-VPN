@@ -33,6 +33,7 @@ create_check() {
     echo "Creating check: $alias"
     
     response=$(curl -s -X POST https://updown.io/api/checks \
+        -w "\n%{http_code}" \
         -H "X-API-KEY: $UPDOWN_API_KEY" \
         -d "url=$url" \
         -d "period=$period" \
@@ -42,8 +43,16 @@ create_check() {
         -d "apdex_t=0.5" \
         -d "string_match=" \
         -d "mute_until=")
+
+         http_code=$(echo "$response" | tail -n1)
+         body=$(echo "$response" | sed '$d')
+ 
+ if [ "$http_code" -ne 201 ] && [ "$http_code" -ne 200 ]; then
+      echo "✗ HTTP $http_code: Failed to create check: $alias"
+       echo "$body"       return 1
+   fi
     
-    if echo "$response" | grep -q "token"; then
+    if echo "$body" | grep -q "token"; then
         token=$(echo "$response" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
         echo "✓ Created check: $alias (token: $token)"
         echo "$response" | python3 -m json.tool 2>/dev/null || echo "$response"
@@ -87,7 +96,4 @@ echo "1. Visit https://updown.io to view your checks"
 echo "2. Configure alerting (email, Slack, webhook, etc.)"
 echo "3. Enable public status page if desired"
 echo "4. Update the Status component with your check tokens"
-echo ""
-echo "To add region-specific monitoring, run:"
-echo "./setup-down.sh add-region <region-url> <region-name>"
 echo ""

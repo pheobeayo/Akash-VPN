@@ -1,13 +1,10 @@
 ---
 version: "2.0"
+
 services:
   softether:
-    image: andrey01/softether:4.38-9760-2
+    image: siomiz/softethervpn:latest
     expose:
-      - port: 80
-        as: 80
-        to:
-          - global: true
       - port: 443
         as: 443
         to:
@@ -16,49 +13,49 @@ services:
         as: 992
         to:
           - global: true
-      - port: 5555
-        as: 5555
-        to:
-          - global: true
       - port: 1194
         as: 1194
         proto: udp
         to:
           - global: true
-      - port: 500
-        as: 500
-        proto: udp
+      - port: 5555
+        as: 5555
         to:
-          - global: true
-      - port: 4500
-        as: 4500
-        proto: udp
-        to:
-          - global: true
-  app:
-    image: declab/v2ray:0.2
+          - service: healthcheck
     env:
-      - "ID=7142a3f6-5788-4c91-839a-25b06fe58f4b"
+      - PSK=your_preshared_key_here
+      - SPW=your_server_password_here
+
+  v2ray:
+    image: v2fly/v2fly-core:latest
     expose:
-      - port: 1010
-        as: 1010
-        to:
-          - global: true
       - port: 1080
         as: 1080
         to:
+          - service: healthcheck
+
+  healthcheck:
+    image: your-docker-registry/akash-vpn-healthcheck:latest
+    expose:
+      - port: 3000
+        as: 80
+        to:
           - global: true
+    env:
+      - PORT=3000
+      - HEALTH_CHECK_TIMEOUT=5000
+
 profiles:
   compute:
     softether:
       resources:
         cpu:
-          units: 1
+          units: 1.0
         memory:
           size: 512Mi
         storage:
           size: 512Mi
-    app:
+    v2ray:
       resources:
         cpu:
           units: 0.5
@@ -66,21 +63,38 @@ profiles:
           size: 256Mi
         storage:
           size: 256Mi
+    healthcheck:
+      resources:
+        cpu:
+          units: 0.25
+        memory:
+          size: 128Mi
+        storage:
+          size: 128Mi
+
   placement:
     dcloud:
       pricing:
-        softether:f
+        softether:f: 
           denom: uakt
-          amount: 100000
-        app:
+          amount: 1000
+        v2ray:
           denom: uakt
-          amount: 100000
+          amount: 500
+        healthcheck:
+          denom: uakt
+          amount: 250
+
 deployment:
   softether:
     dcloud:
       profile: softether
       count: 1
-  app:
+  v2ray:
     dcloud:
-      profile: app
+      profile: v2ray
+      count: 1
+  healthcheck:
+    dcloud:
+      profile: healthcheck
       count: 1
