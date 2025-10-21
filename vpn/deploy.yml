@@ -36,6 +36,8 @@ services:
 
   healthcheck:
     image: <your-actual-registry>/akash-vpn-healthcheck:<version>
+  healthcheck:
+    image: <your-actual-registry>/akash-vpn-healthcheck:<version>
     expose:
       - port: 3000
         as: 80
