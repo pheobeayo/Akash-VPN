@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import net from 'net';
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.PORT || process.env.HEALTH_CHECK_PORT || '3000', 10);
+const TIMEOUT = parseInt(process.env.HEALTH_CHECK_TIMEOUT || '5000', 10);
 
 interface VpnEndpoint {
   name: string;
@@ -31,15 +32,23 @@ interface HealthResponse {
 
 // VPN endpoints to check
 const VPN_ENDPOINTS: VpnEndpoint[] = [
-  { name: 'SoftEther', host: 'softether', port: 5555 },
-  { name: 'V2Ray', host: 'v2ray', port: 1080 }
+  { 
+    name: 'SoftEther', 
+    host: process.env.SOFTETHER_HOST || 'softether', 
+    port: parseInt(process.env.SOFTETHER_PORT || '5555', 10) 
+  },
+  { 
+    name: 'V2Ray', 
+    host: process.env.V2RAY_HOST || 'app', 
+    port: parseInt(process.env.V2RAY_PORT || '1080', 10) 
+  }
 ];
 
 // TCP connectivity check with timeout
 function checkTcpEndpoint(
   host: string,
   port: number,
-  timeout: number = 5000
+  timeout: number = TIMEOUT
 ): Promise<CheckResult> {
   return new Promise((resolve) => {
     const socket = new net.Socket();
@@ -118,19 +127,28 @@ app.get('/', (req: Request, res: Response): void => {
   });
 });
 
+let server: ReturnType<typeof app.listen>;
+
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`VPN Healthcheck service listening on port ${PORT}`);
   console.log(`Monitoring endpoints:`, VPN_ENDPOINTS);
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
+ const shutdown = (signal: string) => {
+  console.log(`${signal} received, shutting down gracefully`);
+  server.close(() => {
+   console.log('Server closed');
+   process.exit(0);
+  });
+  
+  // Force close after 10 seconds
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout');
+   process.exit(1);
+  }, 10000);
+};
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

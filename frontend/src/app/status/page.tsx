@@ -27,9 +27,9 @@ const StatusMonitor = () => {
 
   // Replace these with your actual updown.io check tokens after setup
   const UPDOWN_CHECKS: Record<string, string> = {
-    main: 'xxxx', // Main health check token
-    frontend: 'yyyy', // Frontend check token
-  };
+  main: process.env.NEXT_PUBLIC_UPDOWN_HEALTH_TOKEN || '',
+   frontend: process.env.NEXT_PUBLIC_UPDOWN_FRONTEND_TOKEN || '',
+ };
 
   useEffect(() => {
     fetchHealthStatus();
@@ -66,14 +66,18 @@ const StatusMonitor = () => {
     const statuses: Record<string, UpdownStatusData> = {};
     
     for (const [key, token] of Object.entries(UPDOWN_CHECKS)) {
-      if (token && token !== 'xxxx' && token !== 'yyyy') {
+      if (token) {
         try {
           // Updown.io public API endpoint
-          const response = await fetch(`https://updown.io/api/checks/${token}`, {
-            headers: {
-              'X-API-KEY': process.env.NEXT_PUBLIC_UPDOWN_API_KEY || '',
-            },
-          });
+          const apiKey = process.env.NEXT_PUBLIC_UPDOWN_API_KEY;
+        
+        const headers: HeadersInit = {};
+        if (apiKey) {
+          headers['X-API-KEY'] = apiKey;          }
+        
+        const response = await fetch(`https://updown.io/api/checks/${token}`, {
+          headers,
+         });
           
           if (response.ok) {
             const data = await response.json();

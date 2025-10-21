@@ -1,0 +1,40 @@
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci
+
+# Copy TypeScript configuration and source
+COPY tsconfig.json ./
+COPY src/app/health/healthcheck_service.ts ./src/app/health/
+
+# Compile TypeScript
+RUN npx tsc src/app/health/healthcheck_service.ts --outDir dist --esModuleInterop --resolveJsonModule --moduleResolution node --module commonjs
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Copy compiled JavaScript from builder
+COPY --from=builder /app/dist/src/app/health/healthcheck_service.js ./
+
+# Expose health check port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
+
+# Run the service
+CMD ["node", "healthcheck_service.js"]
