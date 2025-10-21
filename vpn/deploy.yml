@@ -75,7 +75,7 @@ profiles:
   placement:
     dcloud:
       pricing:
-        softether:f: 
+        softether:
           denom: uakt
           amount: 1000
         v2ray:

@@ -24,7 +24,7 @@ export async function GET(
     return NextResponse.json({
       uptime: data.uptime,
       down: data.down,
-      lastCheckAt: data.last_check_at,
+      last_check_at: data.last_check_at,
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 });

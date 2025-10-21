@@ -13,9 +13,9 @@ The monitoring system consists of:
 
 ## Prerequisites
 
-- Active updown.io account (free tier supports 2 checks)
-- API key from https://updown.io/settings/edit
-- Your Akash VPN frontend deployed and accessible
+1. Active [updown.io](https://updown.io) account (free tier supports 2 checks)
+2. API key from [updown.io settings](https://updown.io/settings/edit)
+3. Your Akash VPN frontend deployed and accessible
 
 ## Setup Instructions
 
@@ -62,14 +62,14 @@ Example `akashic-records.json` structure:
 ```bash
 # Make it executable
 chmod +x setup-down.sh
-./setup-down.sh
 
-# Set your configuration
+# Set your configuration (replace with your values)
 export UPDOWN_API_KEY="your-api-key-here"
 export FRONTEND_URL="https://your-frontend.akash.network"
 
 # Run setup
 ./setup-down.sh
+```
 ```
 
 This will create two checks:

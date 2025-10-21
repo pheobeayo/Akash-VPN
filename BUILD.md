@@ -12,13 +12,13 @@ docker tag akash-vpn-healthcheck:latest your-docker-registry/akash-vpn-healthche
 # Push to registry
 docker push your-docker-registry/akash-vpn-healthcheck:latest
 
-Local Testing
+## Local Testing
 # Run locally with Docker
 docker run -p 3000:3000 akash-vpn-healthcheck:latest
 
 # Test the endpoint
 curl http://localhost:3000/health
-Deploying to Akash
+## Deploying to Akash
 Update the image reference in vpn/deploy.yml with your registry URL
 Deploy using Akash CLI:
 akash tx deployment create deploy.yml --from your-wallet --chain-id akashnet-2
