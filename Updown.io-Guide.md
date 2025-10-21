@@ -53,7 +53,7 @@ Example `akashic-records.json` structure:
 
 ### Step 2: Configure Updown.io
 
-1. Sign up at https://updown.io if you haven't already
+1. Sign up at [updown.io](https://updown.io) if you haven't already
 
 2. Get your API key from https://updown.io/settings/edit
 
@@ -70,8 +70,6 @@ export FRONTEND_URL="https://your-frontend.akash.network"
 # Run setup
 ./setup-down.sh
 ```
-```
-
 This will create two checks:
 - **Main Health Check**: Monitors `/health` endpoint (all regions)
 - **Frontend Check**: Monitors main website availability
