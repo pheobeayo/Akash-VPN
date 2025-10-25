@@ -4,22 +4,34 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    ports:
-      - "3000:3000" # Expose frontend directly
+    # Remove direct port exposure - use Traefik instead
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
       - WATCHPACK_POLLING=true
       - HOSTNAME=0.0.0.0
+      - NEXT_PUBLIC_API_URL=/api
       - BACKEND_URL=http://backend:3000 # Using service name for Docker networking
+      - NEXT_PUBLIC_DOMAIN=${DOMAIN_NAME}
     volumes:
       - ./frontend:/app
       - /app/node_modules
       - /app/.next
     depends_on:
       - backend
+    labels:
+      - traefik.enable=true
+      - "traefik.docker.network=pupcakes_traefik_default"
+      - traefik.http.routers.akash-vpn-frontend.rule=Host(`akashvpn.pupcakes.me`)
+      - traefik.http.routers.akash-vpn-frontend.entrypoints=websecure
+      - traefik.http.routers.akash-vpn-frontend.tls=true
+      # - traefik.http.routers.akash-vpn-frontend.tls.certresolver=le  # Using manual certificates
+      - traefik.http.services.akash-vpn-frontend.loadbalancer.server.port=3000
     networks:
       - akash-vpn-network
+      - pupcakes_traefik_default
 
   # Backend Service (Express.js)
   backend:
@@ -27,7 +39,7 @@ services:
       context: ./server
       dockerfile: Dockerfile.dev
     ports:
-      - "3001:3000" # Expose backend on port 3001
+      - "3004:3000" # Expose backend directly for SSH tunneling
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -41,6 +53,9 @@ volumes:
   frontend_node_modules:
   backend_node_modules:
 
+
 networks:
   akash-vpn-network:
     driver: bridge
+  pupcakes_traefik_default:
+    external: true

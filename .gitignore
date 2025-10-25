@@ -51,3 +51,10 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+
+# VPN configuration files
+vpn/*.ovpn
+
+# Example environment files
+envexample.txt
+docker-compose.dev.yml
